@@ -22,6 +22,7 @@ No helper injects a DLL, hooks input, reads game memory or captures the screen.
 It observes the selected process/window and exits when the game or host exits.
 Mixed DPI, window-manager policies and macOS permissions require native testing;
 building a target alone does not establish that every game/compositor works.
+See [desktop validation](docs/validation.md) for the environments and checks run.
 
 ## Build
 
@@ -46,6 +47,8 @@ from one Mac. UI assets are shared across platforms.
 After building, `npm run demo` opens a local preview with sample room data.
 `npm run test:smoke` checks the interface and native tracker against that window.
 Neither command signs in, joins a real room or starts Minecraft.
+`npm run test:native` also exercises movement, resizing, minimization, desktop
+fullscreen and tracker shutdown with a separate sample game process.
 
 ## Releases and launcher integration
 

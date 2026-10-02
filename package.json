@@ -15,7 +15,8 @@
     "check:public": "node scripts/check-public.cjs",
     "test": "node --test tests/*.test.cjs",
     "demo": "electron examples/host.cjs",
-    "test:smoke": "electron examples/host.cjs --smoke"
+    "test:smoke": "electron examples/host.cjs --smoke",
+    "test:native": "electron examples/platform-check.cjs"
   },
   "devDependencies": {
     "vite": "8.2.2",
