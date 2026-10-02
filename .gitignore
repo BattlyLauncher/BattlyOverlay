@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+release/
+*.log
+*.tsbuildinfo
+.env*
+*.pfx
+*.p12
+*.pem
+.DS_Store
