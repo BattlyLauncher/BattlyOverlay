@@ -3,7 +3,10 @@ import type { LanguageStrings } from './language-service';
 import spanish from './locales/es.json';
 import english from './locales/en.json';
 
-export function startWindowLanguage(readLanguage: () => Promise<string>): void {
+export function startWindowLanguage(
+  readLanguage: () => Promise<string>,
+  formatText?: (text: string) => string,
+): void {
   const bundles: Partial<Record<string, () => Promise<LanguageStrings>>> = {
     ...import.meta.glob<LanguageStrings>(
       ['./locales/*.json', '!./locales/es.json', '!./locales/en.json'],
@@ -12,7 +15,7 @@ export function startWindowLanguage(readLanguage: () => Promise<string>): void {
     './locales/es.json': () => Promise.resolve(spanish),
     './locales/en.json': () => Promise.resolve(english),
   };
-  const translator = new UiTranslator(spanish);
+  const translator = new UiTranslator(spanish, formatText);
   translator.start();
   let revision = 0;
   const refresh = async () => {

@@ -15,7 +15,12 @@ declare global {
   }
 }
 const api = window.worldsOverlay;
-startWindowLanguage(() => api.language());
+startWindowLanguage(
+  () => api.language(),
+  (text) => /Macintosh|Mac OS X/.test(navigator.userAgent)
+    ? text.replace(/\bCtrl(?=\s*(?:\+\s*)?[BH]\b)/g, '⌘')
+    : text,
+);
 const el = <T extends HTMLElement = HTMLElement>(selector: string): T =>
   document.querySelector<T>(selector)!;
 el<HTMLImageElement>('[data-logo]').src = logo;

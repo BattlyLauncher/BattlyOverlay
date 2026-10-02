@@ -43,7 +43,10 @@ export class UiTranslator {
   #queued = new Set<Node>();
   #scheduled = false;
   #title: { source: string; rendered: string } | undefined;
-  constructor(source: LanguageStrings) {
+  constructor(
+    source: LanguageStrings,
+    private readonly formatText: (text: string) => string = (text) => text,
+  ) {
     this.#source = flattenStrings(source);
   }
   setStrings(strings: LanguageStrings): void {
@@ -68,7 +71,7 @@ export class UiTranslator {
     configureUiText(this.#dictionary);
     const titleSource =
       this.#title?.rendered === document.title ? this.#title.source : document.title;
-    const title = translateUiText(titleSource);
+    const title = this.#translate(titleSource);
     this.#title = { source: titleSource, rendered: title };
     if (title !== document.title) document.title = title;
     this.apply(document.body);
@@ -122,7 +125,7 @@ export class UiTranslator {
     );
   }
   #translate(source: string): string {
-    return translateUiText(source);
+    return this.formatText(translateUiText(source));
   }
   apply(root: Node): void {
     if (!root) return;

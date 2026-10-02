@@ -23,7 +23,28 @@ Run `npm run test:smoke` and `npm run test:native` after building. Release CI ru
 both on all six targets. Linux CI uses an X11 virtual display and Openbox; this is
 not a hardware GPU or Wayland session.
 
-The Wayland helper's companion response was checked separately. Actual Wayland
-compositor integration, ARM64 execution, Minecraft sessions, microphone capture
-and voice between users have not been verified in this change. No public release
-or remote CI run was completed during these local checks.
+Additional checks used the launcher production adapter and voice controller:
+
+- Linux ran Minecraft 1.20.1 in demo mode with Java 17. Ctrl+B opened the release
+  overlay through system keyboard events in windowed and fullscreen modes. A demo
+  world loaded, opening LAN displayed the automatic invitation, and saving the
+  world and choosing Quit Game ended the JVM with exit code 0 and closed the HUD.
+- macOS processed a real Command+B keyboard event and opened the downloaded UI.
+  Shortcut labels now show Command on macOS. Minecraft 1.20.1 and 1.16.5 both failed
+  before creating their window with `GLFW 65545: NSGL: Failed to find a suitable
+  pixel format`. This VM cannot prove Minecraft/overlay compatibility on a Mac
+  with a supported GPU.
+- Electron ran with the native Wayland backend under a real headless Weston
+  compositor. The release UI opened as a companion panel through the host action.
+  This does not prove a physical global shortcut or overlay stacking in GNOME,
+  KDE, or an exclusive fullscreen Wayland game.
+- Two renderer clients exercised the production voice controller and real WebRTC
+  audio. Linux captured an OS PulseAudio virtual input through getUserMedia;
+  macOS used generated WebAudio tracks because the VM exposes no input device.
+  Receiving audio energy, mute, deafen, volume, and disconnect passed on both;
+  Linux also passed changing the input device and reconnecting the peer.
+
+The voice check uses local signaling and test identities. Calls between real
+Battly accounts through the API, physical microphones/headsets, Apple Silicon,
+Linux ARM64, and native Windows x86 remain unverified. No public release or remote
+CI run was completed during these local checks.
