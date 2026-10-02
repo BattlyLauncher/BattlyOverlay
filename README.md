@@ -43,6 +43,10 @@ to the last two commands, for example `npm run build:native -- darwin-arm64`.
 Linux targets build on their native architecture; macOS supports either architecture
 from one Mac. UI assets are shared across platforms.
 
+After building, `npm run demo` opens a local preview with sample room data.
+`npm run test:smoke` checks the interface and native tracker against that window.
+Neither command signs in, joins a real room or starts Minecraft.
+
 ## Releases and launcher integration
 
 Pull requests build and check all six targets. A push to `main` publishes the

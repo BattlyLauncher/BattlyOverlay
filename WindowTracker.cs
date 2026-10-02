@@ -41,10 +41,15 @@ public class WindowTracker
     {
       try { using (var parent = System.Diagnostics.Process.GetProcessById(owner)) using (var game = System.Diagnostics.Process.GetProcessById(pid)) { if (parent.HasExited || game.HasExited) return; } } catch { return; }
       IntPtr selected = IntPtr.Zero;
+      long largestArea = 0;
       EnumWindows((hwnd, data) =>
       {
         uint candidate; GetWindowThreadProcessId(hwnd, out candidate); RECT r;
-        if (candidate == pid && IsWindowVisible(hwnd) && !IsIconic(hwnd) && GetWindowRect(hwnd, out r) && r.Right - r.Left >= 320 && r.Bottom - r.Top >= 200) { selected = hwnd; return false; }
+        if (candidate == pid && IsWindowVisible(hwnd) && !IsIconic(hwnd) && GetWindowRect(hwnd, out r) && r.Right - r.Left >= 320 && r.Bottom - r.Top >= 200)
+        {
+          long area = (long)(r.Right - r.Left) * (r.Bottom - r.Top);
+          if (area > largestArea) { selected = hwnd; largestArea = area; }
+        }
         return true;
       }, IntPtr.Zero);
       RECT rect;
