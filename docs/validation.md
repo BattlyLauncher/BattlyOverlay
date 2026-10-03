@@ -48,3 +48,16 @@ The voice check uses local signaling and test identities. Calls between real
 Battly accounts through the API, physical microphones/headsets, Apple Silicon,
 Linux ARM64, and native Windows x86 remain unverified. No public release or remote
 CI run was completed during these local checks.
+
+## Published release validation
+
+The [first release workflow](https://github.com/BattlyLauncher/BattlyOverlay/actions/runs/37123542496)
+passed on 3 October 2026 and published `v1.0.0`. All six runner targets executed
+the interface smoke check and native window lifecycle check, including Linux ARM64
+and Apple Silicon. These ARM64 checks use a separate sample game process; they do
+not establish Minecraft or physical audio-device compatibility.
+
+The launcher release loader subsequently downloaded all six published packages
+from GitHub, verified archive and file hashes, and reused each cache with networking
+disabled. Real account calls, physical audio devices, Minecraft on a supported Mac
+GPU, and native Windows x86 still require their own checks.
