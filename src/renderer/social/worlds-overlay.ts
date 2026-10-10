@@ -189,7 +189,7 @@ api.onWorldsEvent((event) => {
   if (event.type === 'snapshot') render(event.snapshot);
   if (event.type === 'invite')
     note(`${event.invite.fromUsername} te invita a jugar. La invitación está en Sala.`);
-  if (event.type === 'notice') note(event.message);
+  if (event.type === 'notice' || event.type === 'closed') note(event.message);
   if (event.type === 'presence') hud.presence(event.username, event.joined);
 });
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-page]'))

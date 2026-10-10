@@ -117,6 +117,7 @@ export type WorldsVoiceEvent =
   | { type: 'status'; status: WorldsVoiceStatus };
 export type WorldsEvent =
   | { type: 'notice'; message: string }
+  | { type: 'closed'; code: string; message: string }
   | { type: 'snapshot'; snapshot: WorldsSnapshot }
   | { type: 'invite'; invite: WorldsInvite }
   | { type: 'presence'; username: string; joined: boolean }
