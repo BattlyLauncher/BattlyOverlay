@@ -38,6 +38,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:responsive
+      - if: runner.os != 'Linux'
+        run: npm run test:responsive
       - run: npm run build:native -- ${{ matrix.target }}
       - if: runner.os == 'Linux'
         run: xvfb-run -a sh -c 'openbox & npm run test:smoke -- --target=${{ matrix.target }}'

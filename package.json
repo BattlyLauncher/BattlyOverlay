@@ -16,7 +16,8 @@
     "test": "node --test tests/*.test.cjs",
     "demo": "electron examples/host.cjs",
     "test:smoke": "electron examples/host.cjs --smoke",
-    "test:native": "electron examples/platform-check.cjs"
+    "test:native": "electron examples/platform-check.cjs",
+    "test:responsive": "electron examples/responsive.cjs"
   },
   "devDependencies": {
     "vite": "8.2.2",
