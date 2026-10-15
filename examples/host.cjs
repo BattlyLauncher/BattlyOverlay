@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard } = require('electron');
 const { join } = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { spawn } = require('node:child_process');
@@ -70,6 +70,10 @@ async function run() {
   });
   handle('example:snapshot', () => snapshot);
   handle('example:preferences', () => preferences);
+  handle('example:clipboard', value => {
+    if(typeof value!=='string'||value.length>32768)throw Error('Invalid clipboard text');
+    clipboard.writeText(value);return clipboard.readText()===value;
+  });
   handle('example:configure', (value) => {
     preferences = value;
     window.webContents.send('example:preferences', preferences);

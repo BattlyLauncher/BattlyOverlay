@@ -1152,3 +1152,7 @@ body[data-lan-state='true'] .hud-shell { scrollbar-width: auto; scrollbar-color:
   .hud-lan-prompt > small { font-size: 8px; }
   .hud-header { padding: 6px 10px; }
 }
+.hud-position-options { display:grid; grid-template-columns:1fr 1fr; gap:6px; border:0; padding:0; margin:12px 0; }
+.hud-position-options legend { margin-bottom:8px; }
+.hud-position-options button { min-height:40px; padding:8px; border:1px solid #354b60; border-radius:8px; background:#102132; color:#c9d9e8; font:inherit; cursor:pointer; }
+.hud-position-options button[aria-pressed="true"] { border-color:#5ac8fa; background:#24526d; color:white; }

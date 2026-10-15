@@ -93,14 +93,13 @@
               >Opacidad <output data-opacity-label>90%</output
               ><input type="range" name="opacity" min="25" max="100" value="90"
             /></label>
-            <label
-              >Posición<select name="position">
-                <option value="top-right">Arriba a la derecha</option>
-                <option value="top-left">Arriba a la izquierda</option>
-                <option value="bottom-right">Abajo a la derecha</option>
-                <option value="bottom-left">Abajo a la izquierda</option>
-              </select></label
-            >
+            <fieldset class="hud-position-options"><legend>Posición</legend>
+              <input type="hidden" name="position" value="top-right" />
+              <button type="button" data-overlay-position="top-left">Arriba a la izquierda</button>
+              <button type="button" data-overlay-position="top-right">Arriba a la derecha</button>
+              <button type="button" data-overlay-position="bottom-left">Abajo a la izquierda</button>
+              <button type="button" data-overlay-position="bottom-right">Abajo a la derecha</button>
+            </fieldset>
             <label class="hud-switch"
               ><span>Personas hablando<small>Actividad de audio en tiempo real</small></span
               ><input type="checkbox" name="showVoice" checked

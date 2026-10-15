@@ -7,6 +7,7 @@ const listen = (channel) => (listener) => {
 contextBridge.exposeInMainWorld(
   'worldsOverlay',
   Object.freeze({
+    writeClipboardText: value => ipcRenderer.invoke('example:clipboard', value),
     language: () => Promise.resolve('es'),
     getWorldsSnapshot: () => ipcRenderer.invoke('example:snapshot'),
     worldsAction: (action) => ipcRenderer.invoke('example:action', action),

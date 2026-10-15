@@ -1,6 +1,6 @@
 {
   "name": "battly-overlay",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Battly Worlds overlay and native window trackers",
   "license": "SEE LICENSE IN LICENSE",

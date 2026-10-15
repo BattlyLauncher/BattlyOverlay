@@ -3,6 +3,7 @@ import type { WorldsOverlayPreferences } from './worlds-overlay-preferences';
 import type { BattlyDesktopApi } from '../desktop-api';
 export interface WorldsOverlayApi extends Pick<
   BattlyDesktopApi,
+  | 'writeClipboardText'
   | 'getWorldsSnapshot'
   | 'worldsAction'
   | 'getWorldsPublicRooms'

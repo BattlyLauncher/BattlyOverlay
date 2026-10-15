@@ -7,6 +7,7 @@ import type {
 } from './social/battly-worlds-contract';
 /** Host bridge only. Network access and account credentials belong to the embedding app. */
 export interface BattlyDesktopApi {
+  writeClipboardText(value: string): Promise<boolean>;
   getWorldsSnapshot(): Promise<WorldsSnapshot>;
   worldsAction(action: WorldsAction): Promise<WorldsSnapshot>;
   getWorldsPublicRooms(page: number): Promise<WorldsPublicRoom[]>;

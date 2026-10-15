@@ -64,7 +64,8 @@ public class WindowTracker
           && origin.X + rect.Right - rect.Left >= monitor.Monitor.Right
           && origin.Y + rect.Bottom - rect.Top >= monitor.Monitor.Bottom;
         IntPtr active = GetForegroundWindow();
-        Console.WriteLine("{\"visible\":" + ((active == selected || active.ToInt64() == overlay) ? "true" : "false") + ",\"fullscreen\":" + (fullscreen ? "true" : "false") + ",\"exclusiveFullscreen\":" + (BlocksOverlay(fullscreen) ? "true" : "false") + ",\"x\":" + origin.X + ",\"y\":" + origin.Y + ",\"width\":" + (rect.Right - rect.Left) + ",\"height\":" + (rect.Bottom - rect.Top) + "}");
+        uint activePid; GetWindowThreadProcessId(active, out activePid);
+        Console.WriteLine("{\"visible\":" + ((activePid == pid || active.ToInt64() == overlay) ? "true" : "false") + ",\"fullscreen\":" + (fullscreen ? "true" : "false") + ",\"exclusiveFullscreen\":" + (BlocksOverlay(fullscreen) ? "true" : "false") + ",\"x\":" + origin.X + ",\"y\":" + origin.Y + ",\"width\":" + (rect.Right - rect.Left) + ",\"height\":" + (rect.Bottom - rect.Top) + "}");
       }
       else Console.WriteLine("{\"visible\":false}");
       Thread.Sleep(250);

@@ -218,12 +218,17 @@ el<HTMLFormElement>('[data-join]').onsubmit = (event) => {
     code: el<HTMLInputElement>('[data-join] input').value.trim().toUpperCase(),
   });
 };
-el('[data-copy]').onclick = () => {
-  if (snapshot)
-    void navigator.clipboard
-      .writeText(snapshot.code)
-      .then(() => note('Copiado.'))
-      .catch(() => note('Selecciona el código y cópialo manualmente.'));
+el('[data-copy]').onclick = async () => {
+  const code = snapshot?.code;
+  if (!code) return;
+  const button = el<HTMLButtonElement>('[data-copy]');
+  button.disabled = true;
+  try {
+    if (await api.writeClipboardText(code) !== true) throw new Error('Clipboard write failed');
+    note('Copiado.');
+  } catch {
+    note('Selecciona el código y cópialo manualmente.');
+  } finally { button.disabled = !snapshot?.code; }
 };
 void api
   .getWorldsSnapshot()

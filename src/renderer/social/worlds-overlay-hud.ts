@@ -45,6 +45,9 @@ export function mountWorldsHud(api: WorldsOverlayApi, note: (message: string) =>
     editor.update(value);
     field('opacity').value = String(value.opacity);
     field('position').value = value.position;
+    form.querySelectorAll<HTMLButtonElement>('[data-overlay-position]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.overlayPosition === value.position));
+    });
     for (const name of ['showVoice', 'showPresence', 'animations'] as const)
       field(name).checked = value[name];
     el('[data-opacity-label]').textContent = value.opacity + '% de opacidad';
@@ -56,6 +59,12 @@ export function mountWorldsHud(api: WorldsOverlayApi, note: (message: string) =>
     void api.configure(preferences).catch(() => note('No se pudo guardar el aspecto del overlay.'));
   };
   const editor = mountWorldsHudEditor(el('[data-hud-editor]'), apply, save);
+  form.querySelectorAll<HTMLButtonElement>('[data-overlay-position]').forEach(button => {
+    button.onclick = () => {
+      apply({ ...preferences, position: button.dataset.overlayPosition as WorldsOverlayPreferences['position'], offsetX: null, offsetY: null });
+      save();
+    };
+  });
   form.oninput = () =>
     apply({
       ...preferences,
