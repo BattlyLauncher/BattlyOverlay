@@ -6,6 +6,7 @@ export interface WorldsInvite {
 }
 
 export interface WorldsSnapshot {
+  readonly maxGuests?: number;
   readonly state: 'idle' | 'starting' | 'scanning' | 'connecting' | 'hosting' | 'joined' | 'error';
   readonly username: string;
   readonly code: string;
@@ -21,6 +22,8 @@ export interface WorldsSnapshot {
 }
 
 export type WorldsAction =
+  | { readonly type: 'report'; readonly roomCode: string; readonly targetUserId?: string; readonly category: string; readonly description: string }
+  | { readonly type: 'discord-join'; readonly secret: string }
   | { readonly type: 'host'; readonly version: string }
   | { readonly type: 'join'; readonly code: string }
   | { readonly type: 'invite'; readonly username: string }
@@ -43,6 +46,14 @@ export function normalizeWorldsAction(input: unknown): WorldsAction {
     return raw.trim();
   };
   switch (value.type) {
+    case 'report': {
+      const category = text('category', /^(harassment|hate|cheating|inappropriate|privacy|other)$/, 32);
+      const description = text('description', /^[^\u0000]{10,2000}$/, 2000);
+      const targetUserId = value.targetUserId === undefined ? undefined : text('targetUserId', /^usuario_[\w.-]+$/, 128);
+      return { type: 'report', roomCode: text('roomCode', /^[A-Z0-9]{6}$/i, 6).toUpperCase(), category, description, ...(targetUserId ? {targetUserId} : {}) };
+    }
+    case 'discord-join':
+      return {type:'discord-join',secret:text('secret',/^[a-f0-9]{64}$/,64)};
     case 'visibility':
       if (typeof value.isPublic !== 'boolean') throw new Error('Visibilidad no válida');
       return {

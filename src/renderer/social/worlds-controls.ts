@@ -1,3 +1,5 @@
+import { showWorldsReport } from './worlds-report';
+import { setOverlayAvatar } from './worlds-avatar';
 import { mountInlineSelect } from '../ui/inline-select';
 import { mountWorldsCatalog } from './worlds-catalog';
 import type { BattlyDesktopApi } from '../../shared/desktop-api';
@@ -10,7 +12,7 @@ export type WorldsControlsApi = Pick<
   | 'worldsVoiceCommand'
   | 'worldsVoiceParty'
   | 'onWorldsEvent'
->;
+> & { faceImageUrl: (username: string) => string | Promise<string> };
 export function mountWorldsControls(
   visibility: HTMLElement,
   voice: HTMLElement,
@@ -22,11 +24,25 @@ export function mountWorldsControls(
     '<form class="bw-visibility"><label>Nombre de tu sala<input maxlength="80" placeholder="Una aventura con amigos" required /></label><p class="bw-hint">Las salas públicas aparecen en Battly para Windows y Android.</p><button class="bw-secondary" type="submit">Publicar sala</button><p role="status"></p></form>';
   voice.innerHTML =
     '<h2>Chat de voz</h2><p class="bw-hint" data-voice-note>Entra en una sala para hablar con tus amigos.</p><div class="bw-voice-actions"><button class="bw-primary" data-voice-connect>Activar voz</button><button class="bw-secondary" data-voice-mute disabled>Silenciar micro</button><button class="bw-secondary" data-voice-deafen disabled>Silenciar audio</button></div><div class="bw-microphone">Micrófono<select data-voice-input aria-label="Micrófono"><option value="">Predeterminado del sistema</option></select></div><div class="bw-voice-members"></div><div class="bw-voice-actions"><button class="bw-secondary" data-party-create disabled>Grupo privado</button><button class="bw-secondary" data-party-room disabled>Voz de la sala</button></div><div class="bw-party-invite" hidden></div>';
+  const reportRoom=document.createElement('button');reportRoom.type='button';reportRoom.className='bw-secondary';reportRoom.textContent='Reportar esta sala';reportRoom.disabled=true;reportRoom.onclick=()=>{if(snapshot?.code)showWorldsReport(api,snapshot.code);};voice.append(reportRoom);
   const publicRooms = mountWorldsCatalog(catalog, api);
   let snapshot: WorldsSnapshot | undefined;
   let state: WorldsVoiceStatus = { connected: false, muted: false, deafened: false, error: '' };
   let memberKey = '',
     channel = 'room';
+  let speaking = new Set<string>();
+  const rows = new Map<string, {row: HTMLElement; status: HTMLElement; member: NonNullable<WorldsSnapshot['participants']>[number]}>();
+  function renderSpeaking(): void {
+    for (const [id, item] of rows) {
+      const self = item.member.username === snapshot?.username;
+      const muted = self ? state.muted || state.deafened : item.member.muted;
+      const connected = self ? state.connected : item.member.voiceConnected;
+      const talking = connected && !muted && item.member.voiceChannel === channel && speaking.has(id);
+      item.row.classList.toggle('is-speaking', talking);
+      item.row.classList.toggle('is-muted', muted);
+      item.status.textContent = !connected ? 'Sin voz' : muted ? 'Micro silenciado' : talking ? 'Hablando' : 'En voz';
+    }
+  }
   const error = (v: unknown): string =>
     v instanceof Error
       ? v.message
@@ -59,7 +75,7 @@ export function mountWorldsControls(
           (state.muted ? 'Micrófono silenciado' : 'Micrófono activo')
         : 'Activa la voz cuando quieras participar.');
     const key = JSON.stringify(snapshot?.participants || []);
-    if (key === memberKey) return;
+    if (key === memberKey) { renderSpeaking(); return; }
     memberKey = key;
     const list = voice.querySelector<HTMLElement>('.bw-voice-members')!;
     const checked = new Set(
@@ -74,9 +90,21 @@ export function mountWorldsControls(
       ]),
     );
     list.replaceChildren();
+    rows.clear();
     for (const member of snapshot?.participants || []) {
       const row = document.createElement('div');
       row.className = 'bw-voice-person';
+      row.dataset.voiceUser = member.userId;
+      const avatar = document.createElement('span');
+      avatar.className = 'bw-voice-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      const initials = document.createElement('span');
+      initials.textContent = member.username.slice(0, 2).toUpperCase();
+      const image = document.createElement('img');
+      image.alt = '';
+      image.onerror = () => { image.hidden = true; };
+      avatar.append(initials, image);
+      setOverlayAvatar(image, member.username, api);
       const label = document.createElement('label');
       const select = document.createElement('input');
       select.type = 'checkbox';
@@ -94,9 +122,14 @@ export function mountWorldsControls(
         : 'Sin voz';
       if (member.username === snapshot?.username) {
         name.textContent += ' (tú)';
-        label.append(name);
-      } else label.append(select, name);
+        label.append(avatar, name);
+      } else label.append(select, avatar, name);
       row.append(label, status);
+      if(member.username !== snapshot?.username) {
+        const report=document.createElement('button');report.type='button';report.className='bw-secondary bw-report-member';report.textContent='Reportar';
+        report.setAttribute('aria-label','Reportar a '+member.username);report.onclick=()=>showWorldsReport(api,snapshot!.code,member);row.append(report);
+      }
+      rows.set(member.userId, {row, status, member});
       const volume = document.createElement('input');
       volume.type = 'range';
       volume.min = '0';
@@ -116,6 +149,7 @@ export function mountWorldsControls(
       if (member.username !== snapshot?.username) row.append(volume);
       list.append(row);
     }
+    renderSpeaking();
   }
   const microphone = voice.querySelector<HTMLSelectElement>('[data-voice-input]')!;
   const refreshMicrophone = inlineDevicePicker ? mountInlineSelect(microphone) : () => {};
@@ -133,9 +167,7 @@ export function mountWorldsControls(
         (d) => d.kind === 'audioinput' && d.deviceId !== 'default',
       ))
         microphone.add(new Option(device.label || 'Micrófono disponible', device.deviceId));
-      microphone.value = [...microphone.options].some((option) => option.value === current)
-        ? current
-        : '';
+      microphone.value = [...microphone.options].some(option => option.value === current) ? current : '';
       refreshMicrophone();
     } catch {
       /* The default device remains usable. */
@@ -194,8 +226,10 @@ export function mountWorldsControls(
       memberKey = '';
       title.value = '';
     }
+    if (snapshot?.code !== next.code || snapshot?.username !== next.username) speaking.clear();
     snapshot = next;
     publicRooms.update(next);
+    reportRoom.disabled=next.state!=='joined';
     if (!active()) channel = 'room';
     visibility.hidden = next.state !== 'hosting';
     publicButton.textContent = next.isPublic ? 'Hacer privada' : 'Publicar sala';
@@ -204,7 +238,14 @@ export function mountWorldsControls(
     renderVoice();
   }
   api.onWorldsEvent((event) => {
-    if (event.type === 'snapshot') update(event.snapshot);
+    if (event.type === 'snapshot') {
+      if (!event.snapshot.code || !['hosting', 'joined'].includes(event.snapshot.state)) speaking.clear();
+      update(event.snapshot);
+    }
+    if (event.type === 'voice' && event.event.type === 'activity') {
+      speaking = new Set(event.event.speakers.filter(item => item.level > 0).map(item => item.userId));
+      renderSpeaking();
+    }
     if (event.type === 'voice' && event.event.type === 'status') {
       const wasConnected = state.connected;
       state = event.event.status;
