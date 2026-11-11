@@ -55,7 +55,7 @@ fullscreen and tracker shutdown with a separate sample game process.
 Pull requests build and check all six targets. A push to `main` publishes the
 version in `VERSION` after all targets pass. `package.json` must have that same
 version. Existing published versions are never overwritten. GitHub Actions uses
-the repository's built-in token; no service credentials are needed.
+the repository's built-in token for publishing and a dedicated Azure OIDC identity for Windows signing. See [Windows signing](docs/windows-signing.md).
 
 Each release has six ZIPs, `manifest.json`, `SHA256SUMS` and GitHub build provenance.
 See [the release contract](docs/releases.md) and [host integration](docs/host.md).

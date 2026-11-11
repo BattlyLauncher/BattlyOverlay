@@ -4,6 +4,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and verify without publishing
+        type: boolean
+        default: true
 permissions:
   contents: read
 concurrency:
@@ -22,6 +27,10 @@ jobs:
           - { os: macos-15-intel, target: darwin-x64 }
           - { os: macos-15, target: darwin-arm64 }
     runs-on: ${{ matrix.os }}
+    environment: ${{ startsWith(matrix.target, 'win32-') && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && 'windows-signing' || 'ci' }}
+    permissions:
+      contents: read
+      id-token: write
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -51,6 +60,25 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1600x1000x24' dbus-run-session -- sh -c 'openbox & npm run test:native -- --target=${{ matrix.target }}'
       - if: runner.os != 'Linux'
         run: npm run test:native -- --target=${{ matrix.target }}
+      - name: Authenticate signing identity
+        if: runner.os == 'Windows' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        env:
+          AZURE_CORE_OUTPUT: none
+      - name: Sign Windows tracker before packaging
+        if: runner.os == 'Windows' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $machine = if ('${{ matrix.target }}' -eq 'win32-x64') { 0x8664 } else { 0x014c }
+          ./scripts/sign-windows.ps1 -Files @('build/${{ matrix.target }}/WindowTracker.exe') -Machines @($machine)
+        env:
+          SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+          SIGNING_ACCOUNT_NAME: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
+          SIGNING_CERTIFICATE_PROFILE: ${{ secrets.AZURE_SIGNING_CERTIFICATE_PROFILE }}
       - run: npm run package -- ${{ matrix.target }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -83,6 +111,7 @@ jobs:
         with:
           subject-path: release/*.zip
       - name: Publish immutable version
+        if: vars.BATTLY_COMPONENT_RELEASE_PUBLISH_ENABLED == 'true' && (github.event_name == 'push' || !inputs.dry_run)
         env:
           GH_TOKEN: ${{ github.token }}
         run: node scripts/publish.cjs
