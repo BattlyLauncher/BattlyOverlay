@@ -1,15 +1,15 @@
-import type { SocialFriend } from './social-contract';
-import type { WorldsOverlayPreferences } from './worlds-overlay-preferences';
-import type { BattlyDesktopApi } from '../desktop-api';
+import type { SocialFriend } from "./social-contract";
+import type { WorldsOverlayPreferences } from "./worlds-overlay-preferences";
+import type { BattlyDesktopApi } from "../desktop-api";
 export interface WorldsOverlayApi extends Pick<
   BattlyDesktopApi,
-  | 'writeClipboardText'
-  | 'getWorldsSnapshot'
-  | 'worldsAction'
-  | 'getWorldsPublicRooms'
-  | 'worldsVoiceCommand'
-  | 'worldsVoiceParty'
-  | 'onWorldsEvent'
+  | "getWorldsSnapshot"
+  | "worldsAction"
+  | "writeClipboardText"
+  | "getWorldsPublicRooms"
+  | "worldsVoiceCommand"
+  | "worldsVoiceParty"
+  | "onWorldsEvent"
 > {
   respondLan(accept: boolean): Promise<void>;
   language(): Promise<string>;

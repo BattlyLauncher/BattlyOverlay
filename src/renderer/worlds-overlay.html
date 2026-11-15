@@ -19,30 +19,46 @@
           title="Ctrl + B · Menú. Ctrl + H · Ocultar o mostrar"
         >
           <span class="hud-wordmark"
-            >Battly <b>Worlds</b><small data-mini-status>Juega en compañía</small></span
-          ><img class="hud-self-face" data-self-face alt="Tu cara" hidden /><span
-            class="hud-voice-indicator"
-            data-mini-indicator
+            >Battly <b>Worlds</b
+            ><small data-mini-status>Juega en compañía</small></span
+          ><img
+            class="hud-self-face"
+            data-self-face
+            alt="Tu cara"
             hidden
-          ></span
+          /><span class="hud-voice-indicator" data-mini-indicator hidden></span
           ><span class="hud-shortcut">Ctrl B</span>
         </button>
       </header>
-      <section class="hud-lan-prompt" data-lan-prompt aria-label="Compartir mundo LAN" hidden>
+      <section
+        class="hud-lan-prompt"
+        data-lan-prompt
+        aria-label="Compartir mundo LAN"
+        hidden
+      >
         <strong>¿Iniciar este mundo en Battly Worlds?</strong>
-        <p>Juega con tus amigos compartiendo el mundo que acabas de abrir en LAN.</p>
+        <p>
+          Juega con tus amigos compartiendo el mundo que acabas de abrir en LAN.
+        </p>
         <div>
-          <button class="bw-primary" data-lan-accept><kbd>Y</kbd> Iniciar</button
-          ><button class="bw-secondary" data-lan-ignore><kbd>N</kbd> Ignorar</button>
+          <button class="bw-primary" data-lan-accept>
+            <kbd>Y</kbd> Iniciar</button
+          ><button class="bw-secondary" data-lan-ignore>
+            <kbd>N</kbd> Ignorar
+          </button>
         </div>
-        <small>Si lo ignoras, no volveremos a avisarte durante esta partida.</small>
+        <small
+          >Si lo ignoras, no volveremos a avisarte durante esta partida.</small
+        >
       </section>
       <section class="hud-room-summary" data-room-summary role="status" hidden>
         <span data-compact-state>Preparando la sala…</span>
         <strong data-compact-code></strong>
         <small>Ctrl + B para más información</small>
       </section>
-      <small class="hud-visibility-hint">Ctrl + H · Ocultar / mostrar overlay</small>
+      <small class="hud-visibility-hint"
+        >Ctrl + H · Ocultar / mostrar overlay</small
+      >
       <div class="hud-body">
         <p class="hud-toast" role="status" hidden></p>
         <nav aria-label="BattlyWorlds">
@@ -53,12 +69,13 @@
         </nav>
         <section data-view="room">
           <div class="hud-status">
-            <span class="hud-eyebrow">Tu aventura, en compañía</span>
-            <strong data-status>Tu mundo con amigos</strong><small data-version></small>
+            <strong data-status>Tu mundo con amigos</strong
+            ><small data-version></small>
             <small data-address hidden></small>
           </div>
           <p data-help>
-            Abre un mundo en Minecraft, pulsa Esc → Abrir en LAN y comparte la sala desde aquí.
+            Abre un mundo en Minecraft, pulsa Esc → Abrir en LAN y comparte la
+            sala desde aquí.
           </p>
           <button class="bw-primary" data-host>Compartir mundo LAN</button>
           <form data-join>
@@ -77,8 +94,13 @@
         <section data-view="voice" hidden></section>
         <section data-view="public" hidden>
           <h2>Comparte tu aventura</h2>
-          <p>Publica tu sala para que otros jugadores puedan encontrarla en Battly Worlds.</p>
-          <p data-public-help>Crea una sala y abre tu mundo en LAN para publicarlo.</p>
+          <p>
+            Publica tu sala para que otros jugadores puedan encontrarla en
+            Battly Worlds.
+          </p>
+          <p data-public-help>
+            Crea una sala y abre tu mundo en LAN para publicarlo.
+          </p>
           <section data-visibility hidden></section>
         </section>
         <section data-view="appearance" hidden>
@@ -93,23 +115,39 @@
               >Opacidad <output data-opacity-label>90%</output
               ><input type="range" name="opacity" min="25" max="100" value="90"
             /></label>
-            <fieldset class="hud-position-options"><legend>Posición</legend>
+            <fieldset class="hud-position-options">
+              <legend>Posición</legend>
               <input type="hidden" name="position" value="top-right" />
-              <button type="button" data-overlay-position="top-left">Arriba a la izquierda</button>
-              <button type="button" data-overlay-position="top-right">Arriba a la derecha</button>
-              <button type="button" data-overlay-position="bottom-left">Abajo a la izquierda</button>
-              <button type="button" data-overlay-position="bottom-right">Abajo a la derecha</button>
+              <button type="button" data-overlay-position="top-left">
+                Arriba a la izquierda
+              </button>
+              <button type="button" data-overlay-position="top-right">
+                Arriba a la derecha
+              </button>
+              <button type="button" data-overlay-position="bottom-left">
+                Abajo a la izquierda
+              </button>
+              <button type="button" data-overlay-position="bottom-right">
+                Abajo a la derecha
+              </button>
             </fieldset>
             <label class="hud-switch"
-              ><span>Personas hablando<small>Actividad de audio en tiempo real</small></span
+              ><span
+                >Personas hablando<small
+                  >Actividad de audio en tiempo real</small
+                ></span
               ><input type="checkbox" name="showVoice" checked
             /></label>
             <label class="hud-switch"
-              ><span>Entradas y salidas<small>Avisos de participantes en la sala</small></span
+              ><span
+                >Entradas y salidas<small
+                  >Avisos de participantes en la sala</small
+                ></span
               ><input type="checkbox" name="showPresence" checked
             /></label>
             <label class="hud-switch"
-              ><span>Animaciones<small>Transiciones y avisos suaves</small></span
+              ><span
+                >Animaciones<small>Transiciones y avisos suaves</small></span
               ><input type="checkbox" name="animations" checked
             /></label>
             <button type="button" class="bw-secondary" data-reset-appearance>
@@ -125,7 +163,9 @@
       <div class="hud-actions" aria-label="Acciones de la sala">
         <button class="bw-secondary" data-open-invite>Invitar amigo</button
         ><button class="bw-secondary" data-copy>Copiar código</button
-        ><button class="bw-secondary hud-danger" data-leave>Salir de la sala</button>
+        ><button class="bw-secondary hud-danger" data-leave>
+          Salir de la sala
+        </button>
       </div>
     </section>
     <section class="hud-live" aria-label="Actividad de la sala">

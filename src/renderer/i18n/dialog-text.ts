@@ -4,4 +4,5 @@ export {
   plainLocaleText,
   translateUiText,
   setUiText,
-} from '../../shared/catalog-text';
+  catalogParagraphParts,
+} from "../../shared/catalog-text";

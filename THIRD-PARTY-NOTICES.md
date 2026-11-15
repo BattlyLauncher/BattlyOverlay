@@ -2,6 +2,8 @@
 
 - Poppins by the Poppins Project Authors: SIL Open Font License 1.1;
   see `licenses/Poppins-OFL.txt`.
+- Noto Color Emoji by Google: SIL Open Font License 1.1;
+  see `licenses/NotoEmoji-OFL.txt`.
 - Battly logo and Minecraft-themed artwork are retained from Battly Launcher.
   Publication does not grant rights to the Battly or Minecraft trademarks.
 - Vite, TypeScript, Electron, adm-zip and their build dependencies retain their

@@ -1,6 +1,24 @@
-import type { LanguageStrings } from './language-service';
-import { configureUiText, plainLocaleText, setUiText, translateUiText } from './dialog-text';
-export { plainLocaleText } from './dialog-text';
+import type { LanguageStrings } from "./language-service";
+import {
+  configureUiText,
+  plainLocaleText,
+  setUiText,
+  translateUiText,
+} from "./dialog-text";
+const translatedAttributes = [
+  "title",
+  "placeholder",
+  "aria-label",
+  "aria-description",
+  "aria-valuetext",
+  "alt",
+  "label",
+  "value",
+] as const;
+const attributeSelector = translatedAttributes
+  .map((attribute) => `[${attribute}]`)
+  .join(",");
+export { plainLocaleText } from "./dialog-text";
 
 export function setUserText(
   element: HTMLElement,
@@ -8,26 +26,28 @@ export function setUserText(
   fallback?: string,
 ): void {
   if (!value && fallback !== undefined) {
-    element.removeAttribute('translate');
-    element.removeAttribute('data-i18n-dynamic');
+    element.removeAttribute("translate");
+    element.removeAttribute("data-i18n-dynamic");
     setUiText(element, fallback);
     return;
   }
   delete element.dataset.uiSource;
-  element.setAttribute('translate', 'no');
-  element.textContent = value ?? '';
+  element.setAttribute("translate", "no");
+  element.textContent = value ?? "";
 }
 
 export function flattenStrings(
   strings: LanguageStrings,
-  prefix = '',
+  prefix = "",
   result = new Map<string, string>(),
 ): Map<string, string> {
   for (const [key, value] of Object.entries(strings)) {
     const path = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === 'string') result.set(path, value);
-    else if (value && typeof value === 'object' && !Array.isArray(value))
+    if (typeof value === "string") {
+      result.set(path, value);
+    } else if (value && typeof value === "object" && !Array.isArray(value)) {
       flattenStrings(value as LanguageStrings, path, result);
+    }
   }
   return result;
 }
@@ -36,7 +56,10 @@ export function flattenStrings(
 export class UiTranslator {
   readonly #source: Map<string, string>;
   readonly #texts = new WeakMap<Node, { source: string; rendered: string }>();
-  readonly #attributes = new WeakMap<Element, Map<string, { source: string; rendered: string }>>();
+  readonly #attributes = new WeakMap<
+    Element,
+    Map<string, { source: string; rendered: string }>
+  >();
   #dictionary = new Map<string, string>();
   #target = new Map<string, string>();
   #observer: MutationObserver | undefined;
@@ -56,12 +79,14 @@ export class UiTranslator {
     // Complete, reviewed UI catalogues take precedence over legacy aliases and
     // the English-only modal fallback merged into an incomplete language pack.
     const priority = (key: string): number =>
-      /^(interface|modalCopy|gameSettings)\./.test(key)
+      /^(reviewedCopy|interface|modalCopy|gameSettings)\./.test(key)
         ? 0
-        : key.startsWith('modalFallback.')
+        : key.startsWith("modalFallback.")
           ? 2
           : 1;
-    const entries = [...this.#source].sort(([a], [b]) => priority(a) - priority(b));
+    const entries = [...this.#source].sort(
+      ([a], [b]) => priority(a) - priority(b),
+    );
     for (const [key, source] of entries) {
       const translated = target.get(key);
       if (source.trim() && translated && !this.#dictionary.has(source.trim())) {
@@ -70,21 +95,31 @@ export class UiTranslator {
     }
     configureUiText(this.#dictionary);
     const titleSource =
-      this.#title?.rendered === document.title ? this.#title.source : document.title;
+      this.#title?.rendered === document.title
+        ? this.#title.source
+        : document.title;
     const title = this.#translate(titleSource);
     this.#title = { source: titleSource, rendered: title };
-    if (title !== document.title) document.title = title;
+    if (title !== document.title) {
+      document.title = title;
+    }
     this.apply(document.body);
   }
   start(): void {
-    if (this.#observer) return;
+    if (this.#observer) {
+      return;
+    }
     this.#observer = new MutationObserver((records) => {
       for (const record of records) {
-        if (record.type === 'childList')
+        if (record.type === "childList") {
           record.addedNodes.forEach((node) => this.#queued.add(node));
-        else this.#queued.add(record.target);
+        } else {
+          this.#queued.add(record.target);
+        }
       }
-      if (this.#scheduled) return;
+      if (this.#scheduled) {
+        return;
+      }
       this.#scheduled = true;
       queueMicrotask(() => {
         this.#scheduled = false;
@@ -92,7 +127,11 @@ export class UiTranslator {
         this.#queued.clear();
         // Keep observing: disconnecting here drops concurrent async UI updates.
         // apply() writes only changed values, so our own records converge safely.
-        for (const root of roots) if (root.isConnected) this.apply(root);
+        for (const root of roots) {
+          if (root.isConnected) {
+            this.apply(root);
+          }
+        }
       });
     });
     this.#observe();
@@ -104,38 +143,44 @@ export class UiTranslator {
       characterData: true,
       attributes: true,
       attributeFilter: [
-        'placeholder',
-        'title',
-        'aria-label',
-        'data-string-id',
-        'data-string-id-placeholder',
+        ...translatedAttributes,
+        "data-string-id",
+        "data-string-id-placeholder",
+        "data-string-id-title",
+        "data-string-id-alt",
       ],
     });
   }
   #skip(element: Element | null, attribute = false): boolean {
     return (
       !element ||
-      (!attribute && Boolean(element.closest('textarea'))) ||
+      (!attribute && Boolean(element.closest("textarea"))) ||
       Boolean(
         element.closest(
-          'script,style,pre,code,[contenteditable], [translate="no"], [data-i18n-dynamic]',
+          'script,style,[contenteditable], [translate="no"], [data-i18n-dynamic]',
         ),
       ) ||
-      (!attribute && element.matches('[data-string-id], [data-string-target]'))
+      (!attribute && Boolean(element.closest("pre,code"))) ||
+      (!attribute && element.matches("[data-string-id], [data-string-target]"))
     );
   }
   #translate(source: string): string {
     return this.formatText(translateUiText(source));
   }
   apply(root: Node): void {
-    if (!root) return;
+    if (!root) {
+      return;
+    }
     // Panels and dialogs can mount after the initial language change.
-    const bindingRoot = root.nodeType === Node.TEXT_NODE ? root.parentElement : root;
+    const bindingRoot =
+      root.nodeType === Node.TEXT_NODE ? root.parentElement : root;
     const bound =
       bindingRoot instanceof Element || bindingRoot instanceof Document
         ? [
             ...(bindingRoot instanceof Element ? [bindingRoot] : []),
-            ...bindingRoot.querySelectorAll('[data-string-id],[data-string-id-placeholder]'),
+            ...bindingRoot.querySelectorAll(
+              "[data-string-id],[data-string-id-placeholder],[data-string-id-title],[data-string-id-alt]",
+            ),
           ]
         : [];
     for (const element of bound) {
@@ -143,70 +188,131 @@ export class UiTranslator {
         element.closest(
           'script,style,pre,code,[contenteditable],[translate="no"],[data-i18n-dynamic]',
         )
-      )
+      ) {
         continue;
-      for (const attribute of ['data-string-id', 'data-string-id-placeholder']) {
+      }
+      for (const attribute of [
+        "data-string-id",
+        "data-string-id-placeholder",
+        "data-string-id-title",
+        "data-string-id-alt",
+      ]) {
         const key = element.getAttribute(attribute);
         const value = key ? this.#target.get(key) : undefined;
-        if (value === undefined) continue;
+        if (value === undefined) {
+          continue;
+        }
         const translated = plainLocaleText(value);
         if (
-          attribute.endsWith('-placeholder') ||
-          (element instanceof HTMLInputElement && element.hasAttribute('placeholder'))
+          attribute === "data-string-id-title" ||
+          attribute === "data-string-id-alt"
         ) {
-          if (element.getAttribute('placeholder') !== translated)
-            element.setAttribute('placeholder', translated);
+          const targetAttribute = attribute.endsWith("-title")
+            ? "title"
+            : "alt";
+          if (element.getAttribute(targetAttribute) !== translated) {
+            element.setAttribute(targetAttribute, translated);
+          }
+        } else if (
+          attribute.endsWith("-placeholder") ||
+          (element instanceof HTMLInputElement &&
+            element.hasAttribute("placeholder"))
+        ) {
+          if (element.getAttribute("placeholder") !== translated) {
+            element.setAttribute("placeholder", translated);
+          }
         } else {
-          const target = element.querySelector(':scope > [data-string-target]');
+          const target = element.querySelector(":scope > [data-string-target]");
           if (target) {
-            if (target.textContent !== translated) target.textContent = translated;
+            if (target.textContent !== translated) {
+              target.textContent = translated;
+            }
           } else if (!element.children.length) {
-            if (element.textContent !== translated) element.textContent = translated;
+            if (element.textContent !== translated) {
+              element.textContent = translated;
+            }
           } else {
             const nodes = [...element.childNodes].filter(
               (node) => node.nodeType === Node.TEXT_NODE,
             );
-            if (!nodes.length) element.prepend(document.createTextNode(translated + ' '));
-            else if (nodes[0].textContent !== translated + ' ')
-              nodes[0].textContent = translated + ' ';
-            for (const node of nodes.slice(1)) if (node.textContent) node.textContent = '';
+            if (!nodes.length) {
+              element.prepend(document.createTextNode(translated + " "));
+            } else if (nodes[0].textContent !== translated + " ") {
+              nodes[0].textContent = translated + " ";
+            }
+            for (const node of nodes.slice(1)) {
+              if (node.textContent) {
+                node.textContent = "";
+              }
+            }
           }
         }
       }
     }
     const text = (node: Node) => {
-      if (this.#skip(node.parentElement)) return;
-      const current = node.textContent ?? '',
+      if (this.#skip(node.parentElement)) {
+        return;
+      }
+      const current = node.textContent ?? "",
         previous = this.#texts.get(node);
       const source =
         node.parentElement?.dataset.uiSource ??
         (previous?.rendered === current ? previous.source : current);
       const rendered = this.#translate(source);
       this.#texts.set(node, { source, rendered });
-      if (current !== rendered) node.textContent = rendered;
+      if (current !== rendered) {
+        node.textContent = rendered;
+      }
     };
-    if (root.nodeType === Node.TEXT_NODE) text(root);
-    else {
+    if (root.nodeType === Node.TEXT_NODE) {
+      text(root);
+    } else {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-      while (walker.nextNode()) text(walker.currentNode);
+      while (walker.nextNode()) {
+        text(walker.currentNode);
+      }
     }
     const elements =
       root instanceof Element
-        ? [root, ...root.querySelectorAll('[title],[placeholder],[aria-label]')]
+        ? [root, ...root.querySelectorAll(attributeSelector)]
         : [];
     for (const element of elements) {
-      if (this.#skip(element, true)) continue;
+      if (this.#skip(element, true)) {
+        continue;
+      }
       const saved =
-        this.#attributes.get(element) ?? new Map<string, { source: string; rendered: string }>();
+        this.#attributes.get(element) ??
+        new Map<string, { source: string; rendered: string }>();
       this.#attributes.set(element, saved);
-      for (const attr of ['title', 'placeholder', 'aria-label']) {
+      for (const attr of translatedAttributes) {
+        const boundKey = element.getAttribute(`data-string-id-${attr}`);
+        if (boundKey && this.#target.has(boundKey)) {
+          continue;
+        }
+        // Never translate editable values, filenames or identifiers.
+        if (
+          attr === "value" &&
+          !element.matches(
+            'input[type="button"],input[type="submit"],input[type="reset"]',
+          )
+        ) {
+          continue;
+        }
+        if (attr === "label" && !element.matches("optgroup,option")) {
+          continue;
+        }
         const current = element.getAttribute(attr);
-        if (current === null) continue;
+        if (current === null) {
+          continue;
+        }
         const previous = saved.get(attr);
-        const source = previous?.rendered === current ? previous.source : current,
+        const source =
+            previous?.rendered === current ? previous.source : current,
           rendered = this.#translate(source);
         saved.set(attr, { source, rendered });
-        if (current !== rendered) element.setAttribute(attr, rendered);
+        if (current !== rendered) {
+          element.setAttribute(attr, rendered);
+        }
       }
     }
   }

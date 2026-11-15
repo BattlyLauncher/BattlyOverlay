@@ -1,4 +1,3 @@
-
 /** Only host-provided PNG data is accepted; account endpoints stay in the host. */
 export function setOverlayAvatar(
   image: HTMLImageElement,
@@ -7,10 +6,18 @@ export function setOverlayAvatar(
 ): void {
   image.dataset.avatarOwner = username;
   image.hidden = true;
-  void Promise.resolve().then(() => api.faceImageUrl(username))
+  void Promise.resolve()
+    .then(() => api.faceImageUrl(username))
     .then((value) => {
-      if (image.dataset.avatarOwner !== username) return;
-      if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value) || value.length > 400000) return;
+      if (image.dataset.avatarOwner !== username) {
+        return;
+      }
+      if (
+        !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value) ||
+        value.length > 400000
+      ) {
+        return;
+      }
       image.src = value;
       image.hidden = false;
     })
